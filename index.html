@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Plot Twist: Tech Takes the Class</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#1d2433;--mute:#5d6678;--line:#dcd8cc;--a:#0f766e;--a-soft:#d9f0ec;--b:#c2410c;--b-soft:#fde6d9;--acc:#4338ca;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171f;--card:#1e2330;--ink:#eef0f5;--mute:#a0a8ba;--line:#323a4d;--a:#5eead4;--a-soft:#12332f;--b:#fdba74;--b-soft:#3a2415;--acc:#a5b4fc}}
+:root[data-theme="dark"]{--bg:#14171f;--card:#1e2330;--ink:#eef0f5;--mute:#a0a8ba;--line:#323a4d;--a:#5eead4;--a-soft:#12332f;--b:#fdba74;--b-soft:#3a2415;--acc:#a5b4fc}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45}
+.wrap{max-width:1000px;margin:0 auto;padding:16px}
+h1{font-size:clamp(1.6rem,4vw,2.4rem);margin:.2em 0}
+h2{font-size:1.25rem;margin:.2em 0}
+.mute{color:var(--mute)}
+.top{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:14px}
+.sb{display:flex;gap:10px;align-items:center;font-weight:700}
+.pill{padding:4px 12px;border-radius:999px;font-size:.95rem}
+.pa{background:var(--a-soft);color:var(--a)}.pb{background:var(--b-soft);color:var(--b)}
+.timer{font-size:2rem;font-variant-numeric:tabular-nums;font-weight:800}
+.timer.low{color:#dc2626}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 14px}
+button.main{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:700}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.main{color:#14171f}}
+button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:720px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;border-top:6px solid}
+.card.a{border-top-color:var(--a)}.card.b{border-top-color:var(--b)}
+.tag{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.reto{background:var(--bg);border-radius:10px;padding:8px 10px;margin:10px 0;font-weight:600}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:6px 0;flex-wrap:wrap}
+.row small{color:var(--mute);display:block}
+.seg{display:flex;gap:4px}
+.seg button{width:38px;padding:6px 0}
+input[type=text]{font:inherit;width:100%;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.track{display:flex;gap:6px;margin-top:10px}
+.sq{flex:1;height:10px;border-radius:5px;background:var(--line)}
+.sq.f{background:currentColor}
+.center{text-align:center}
+.big{font-size:3rem}
+.bar{display:flex;gap:10px;justify-content:space-between;margin-top:14px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="top" class="top" hidden>
+    <div class="sb"><span id="sa" class="pill pa"></span><span id="sbb" class="pill pb"></span></div>
+    <div class="sb"><span id="rl" class="mute"></span></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span id="tm" class="timer">2:30</span>
+      <button id="tg">▶</button><button id="tr">↺</button>
+    </div>
+  </div>
+  <div id="app"></div>
+</div>
+<script>
+const ROUNDS=[
+{t:"El profesor demasiado amable",A:["Un chatbot corrige todos los errores y reescribe el texto completo. El estudiante entrega la versión perfecta sin entender nada.","Rediseñar la consigna para que la corrección sirva para aprender."],B:["Un corrector automático marca «error» en una construcción correcta pero informal.","Decidir qué le dicen al estudiante y cómo enseñan a evaluar las sugerencias de la herramienta."]},
+{t:"El profesor que no entiende el contexto",A:["Un traductor automático traduce un término técnico de ESP con un sentido equivocado y el estudiante lo usa en un informe.","Convertir el error en una actividad de clase."],B:["Un asistente de voz penaliza el acento de un estudiante y le pide repetir diez veces.","Recuperar la confianza del estudiante y definir qué criterio de pronunciación priorizan."]},
+{t:"El profesor que inventa",A:["Un chatbot explica con total seguridad una regla gramatical que no existe.","Diseñar una mini-rutina para que los estudiantes verifiquen lo que dice una IA."],B:["Un generador de textos produce una lectura «A2» con vocabulario y estructuras de B2.","Ajustar el prompt y definir cómo chequean el nivel del texto."]},
+{t:"El profesor que evalúa",A:["Una IA le pone 10 a un texto con gramática perfecta pero ideas vacías, y 6 a otro con errores pero muy buenas ideas.","Definir qué criterios de evaluación quedan siempre en manos docentes."],B:["Un detector de IA acusa de plagio a un estudiante que escribió su texto él mismo.","Decidir cómo actúan sin romper la confianza y cómo evidencian el proceso de escritura."]},
+{t:"El profesor que reemplaza a los compañeros",A:["Los estudiantes practican speaking solo con un chatbot y ya no quieren hablar entre ellos en clase.","Diseñar una actividad donde la tecnología prepare la interacción humana, no la reemplace."],B:["Un chatbot propone ejemplos con estereotipos culturales y de género cuando le piden «un texto sobre una familia».","Convertir el sesgo en material de análisis crítico con los estudiantes."]}
+];
+const CR=[["d","Diagnóstico","Identifican qué falló la tecnología como «profesora»"],["i","Intervención","Acción docente concreta y viable"],["c","Criterio pedagógico","Ayuda a aprender, no solo a producir"]];
+let S;
+const $=id=>document.getElementById(id);
+function init(){S={names:["Equipo A","Equipo B"],r:-1,sc:[0,1].map(()=>ROUNDS.map(()=>({d:0,i:0,c:0,b:0}))),end:["","","",""]};stopT();render()}
+const tot=t=>S.sc[t].reduce((s,x)=>s+x.d+x.i+x.c+x.b,0);
+const rtot=(t,r)=>{const x=S.sc[t][r];return x.d+x.i+x.c+x.b};
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function scores(){$("sa").textContent=S.names[0]+": "+tot(0);$("sbb").textContent=S.names[1]+": "+tot(1)}
+function render(){
+  const app=$("app");
+  $("top").hidden=S.r<0||S.r>4;
+  if(S.r===-1){
+    app.innerHTML=`<div class="center" style="padding:20px 0"><div class="big">🎲</div><h1>Plot Twist: Tech Takes the Class</h1>
+    <p class="mute">Si la tecnología fuera una docente de inglés… ¿qué haríamos nosotros? 5 rondas · 15 minutos · 2 equipos</p></div>
+    <div class="grid"><div class="card a"><div class="tag" style="color:var(--a)">Equipo A</div><p>Nombre del equipo</p><input type="text" id="n0" value="${esc(S.names[0])}"></div>
+    <div class="card b"><div class="tag" style="color:var(--b)">Equipo B</div><p>Nombre del equipo</p><input type="text" id="n1" value="${esc(S.names[1])}"></div></div>
+    <div class="card" style="margin-top:14px;border-top-color:var(--acc)"><b>Cómo se juega</b>
+    <p>En cada ronda, cada equipo recibe una situación distinta. Tienen 1 minuto y medio para resolverla y 1 minuto para presentarla. El jurado (quien coordina) puntúa de 0 a 2: <b>diagnóstico</b>, <b>intervención</b> y <b>criterio pedagógico</b>. Bonus +1 si el otro equipo dice que usaría la solución en su clase.</p></div>
+    <div class="bar"><span></span><button class="main" id="go">Empezar ronda 1 →</button></div>`;
+    $("go").onclick=()=>{S.names=[$("n0").value||"Equipo A",$("n1").value||"Equipo B"];S.r=0;render()};
+    return;
+  }
+  if(S.r>4){
+    const a=tot(0),b=tot(1),w=a===b?null:(a>b?0:1);
+    app.innerHTML=`<div class="center" style="padding:16px 0"><div class="big">🏆</div><h1>${w===null?"¡Empate!":"Gana "+esc(S.names[w])}</h1>
+    <p class="mute">${esc(S.names[0])}: <b>${a}</b> · ${esc(S.names[1])}: <b>${b}</b></p></div>
+    <div class="card" style="border-top-color:var(--acc)"><h2>Cierre: ¿qué rol le damos a la tecnología?</h2>
+    <p class="mute">Cada equipo completa en una frase: <b>Tech as ___, never as ___.</b></p>
+    <div class="grid">${[0,1].map(t=>`<div><div class="tag" style="color:var(--${t?"b":"a"})">${esc(S.names[t])}</div>
+    <p style="margin:6px 0">Tech as…</p><input type="text" data-e="${t*2}" value="${esc(S.end[t*2])}">
+    <p style="margin:6px 0">…never as…</p><input type="text" data-e="${t*2+1}" value="${esc(S.end[t*2+1])}"></div>`).join("")}</div></div>
+    <div class="bar"><button id="back">← Volver a la ronda 5</button><button class="main" id="again">Jugar de nuevo</button></div>`;
+    app.querySelectorAll("[data-e]").forEach(i=>i.oninput=()=>S.end[i.dataset.e]=i.value);
+    $("back").onclick=()=>{S.r=4;render()};$("again").onclick=init;
+    return;
+  }
+  const R=ROUNDS[S.r];
+  $("rl").textContent="Ronda "+(S.r+1)+" de 5";
+  resetT();scores();
+  app.innerHTML=`<h2 class="center">Ronda ${S.r+1}: ${R.t}</h2><div class="track" style="color:var(--acc)">${ROUNDS.map((_,i)=>`<div class="sq ${i<=S.r?"f":""}"></div>`).join("")}</div>
+  <p class="mute center">1:30 para resolver · 1 min para presentar</p>
+  <div class="grid">${[0,1].map(t=>{const k=t?"b":"a",c=R[t?"B":"A"],x=S.sc[t][S.r];return `<div class="card ${k}">
+    <div class="tag" style="color:var(--${k})">${esc(S.names[t])} · Rta. ${rtot(t,S.r)}/7</div>
+    <p><b>Situación:</b> ${c[0]}</p><div class="reto">🎯 Reto: ${c[1]}</div>
+    ${CR.map(([f,n,d])=>`<div class="row"><div>${n}<small>${d}</small></div><div class="seg">${[0,1,2].map(v=>`<button data-t="${t}" data-f="${f}" data-v="${v}" class="${x[f]===v?"on":""}">${v}</button>`).join("")}</div></div>`).join("")}
+    <div class="row"><div>Bonus<small>El otro equipo lo usaría en su clase</small></div><div class="seg"><button data-t="${t}" data-f="b" data-v="${x.b?0:1}" class="${x.b?"on":""}" style="width:auto;padding:6px 12px">+1</button></div></div></div>`}).join("")}</div>
+  <div class="bar"><button id="prev" ${S.r?"":"disabled"}>← Anterior</button><button class="main" id="next">${S.r<4?"Siguiente ronda →":"Ver resultados 🏆"}</button></div>`;
+  app.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{S.sc[b.dataset.t][S.r][b.dataset.f]=+b.dataset.v;const y=scrollY;render2(y)});
+  $("prev").onclick=()=>{S.r--;render()};
+  $("next").onclick=()=>{S.r++;render();scrollTo(0,0)};
+}
+function render2(y){const keep=remaining,run=!!iv;const app=$("app");const r=S.r;render();remaining=keep;draw();if(run)startT();scrollTo(0,y)}
+let remaining=150,iv=null;
+function draw(){const m=Math.floor(remaining/60),s=remaining%60;$("tm").textContent=m+":"+String(s).padStart(2,"0");$("tm").classList.toggle("low",remaining<=30&&remaining>0);$("tg").textContent=iv?"⏸":"▶"}
+function stopT(){clearInterval(iv);iv=null}
+function resetT(){stopT();remaining=150;draw()}
+function startT(){stopT();iv=setInterval(()=>{remaining--;if(remaining<=0){remaining=0;stopT();try{new (window.AudioContext||window.webkitAudioContext)().resume()}catch(e){}}draw()},1000);draw()}
+$("tg").onclick=()=>{iv?(stopT(),draw()):(remaining>0&&startT())};
+$("tr").onclick=resetT;
+init();
+</script>
+</body>
+</html>
