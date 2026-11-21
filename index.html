@@ -50,7 +50,7 @@ input[type=text]{font:inherit;width:100%;padding:8px 10px;border-radius:10px;bor
     <div class="sb"><span id="sa" class="pill pa"></span><span id="sbb" class="pill pb"></span></div>
     <div class="sb"><span id="rl" class="mute"></span></div>
     <div style="display:flex;gap:8px;align-items:center">
-      <span id="tm" class="timer">2:30</span>
+      <span id="tm" class="timer">1:15</span>
       <button id="tg">▶</button><button id="tr">↺</button>
     </div>
   </div>
@@ -67,7 +67,7 @@ const ROUNDS=[
 const CR=[["d","Diagnóstico","Identifican qué falló la tecnología como «profesora»"],["i","Intervención","Acción docente concreta y viable"],["c","Criterio pedagógico","Ayuda a aprender, no solo a producir"]];
 let S;
 const $=id=>document.getElementById(id);
-function init(){S={names:["Equipo A","Equipo B"],r:-1,sc:[0,1].map(()=>ROUNDS.map(()=>({d:0,i:0,c:0,b:0}))),end:["","","",""]};stopT();render()}
+function init(){S={names:["Equipo A","Equipo B"],r:-1,t:0,sc:[0,1].map(()=>ROUNDS.map(()=>({d:0,i:0,c:0,b:0}))),end:["","","",""]};stopT();render()}
 const tot=t=>S.sc[t].reduce((s,x)=>s+x.d+x.i+x.c+x.b,0);
 const rtot=(t,r)=>{const x=S.sc[t][r];return x.d+x.i+x.c+x.b};
 const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -81,7 +81,7 @@ function render(){
     <div class="grid"><div class="card a"><div class="tag" style="color:var(--a)">Equipo A</div><p>Nombre del equipo</p><input type="text" id="n0" value="${esc(S.names[0])}"></div>
     <div class="card b"><div class="tag" style="color:var(--b)">Equipo B</div><p>Nombre del equipo</p><input type="text" id="n1" value="${esc(S.names[1])}"></div></div>
     <div class="card" style="margin-top:14px;border-top-color:var(--acc)"><b>Cómo se juega</b>
-    <p>En cada ronda, cada equipo recibe una situación distinta. Tienen 1 minuto y medio para resolverla y 1 minuto para presentarla. El jurado (quien coordina) puntúa de 0 a 2: <b>diagnóstico</b>, <b>intervención</b> y <b>criterio pedagógico</b>. Bonus +1 si el otro equipo dice que usaría la solución en su clase.</p></div>
+    <p>En cada ronda, cada equipo recibe una situación distinta. Los retos se revelan de a uno: cada equipo ve el suyo solo cuando le toca el turno, y tiene 1 minuto y cuarto para resolverlo y presentarlo. El jurado (quien coordina) puntúa de 0 a 2: <b>diagnóstico</b>, <b>intervención</b> y <b>criterio pedagógico</b>. Bonus +1 si el otro equipo dice que usaría la solución en su clase.</p></div>
     <div class="bar"><span></span><button class="main" id="go">Empezar ronda 1 →</button></div>`;
     $("go").onclick=()=>{S.names=[$("n0").value||"Equipo A",$("n1").value||"Equipo B"];S.r=0;render()};
     return;
@@ -97,29 +97,29 @@ function render(){
     <p style="margin:6px 0">…never as…</p><input type="text" data-e="${t*2+1}" value="${esc(S.end[t*2+1])}"></div>`).join("")}</div></div>
     <div class="bar"><button id="back">← Volver a la ronda 5</button><button class="main" id="again">Jugar de nuevo</button></div>`;
     app.querySelectorAll("[data-e]").forEach(i=>i.oninput=()=>S.end[i.dataset.e]=i.value);
-    $("back").onclick=()=>{S.r=4;render()};$("again").onclick=init;
+    $("back").onclick=()=>{S.r=4;S.t=1;render()};$("again").onclick=init;
     return;
   }
   const R=ROUNDS[S.r];
-  $("rl").textContent="Ronda "+(S.r+1)+" de 5";
+  $("rl").textContent="Ronda "+(S.r+1)+" de 5 · Turno de "+S.names[S.t===0?S.r%2:1-S.r%2];
   resetT();scores();
   app.innerHTML=`<h2 class="center">Ronda ${S.r+1}: ${R.t}</h2><div class="track" style="color:var(--acc)">${ROUNDS.map((_,i)=>`<div class="sq ${i<=S.r?"f":""}"></div>`).join("")}</div>
-  <p class="mute center">1:30 para resolver · 1 min para presentar</p>
-  <div class="grid">${[0,1].map(t=>{const k=t?"b":"a",c=R[t?"B":"A"],x=S.sc[t][S.r];return `<div class="card ${k}">
+  <p class="mute center">Turno de <b>${esc(S.names[S.t===0?S.r%2:1-S.r%2])}</b> · 1:15 para resolver y presentar</p>
+  <div class="grid">${[0,1].map(t=>{const k=t?"b":"a",c=R[t?"B":"A"],x=S.sc[t][S.r];if(!(t===S.r%2||S.t>=1))return `<div class="card ${k}" style="display:flex;align-items:center;justify-content:center;min-height:200px;text-align:center"><div><div class="big">🔒</div><div class="tag" style="color:var(--${k})">${esc(S.names[t])}</div><p class="mute">Su reto se revela cuando le toque el turno</p></div></div>`;return `<div class="card ${k}">
     <div class="tag" style="color:var(--${k})">${esc(S.names[t])} · Rta. ${rtot(t,S.r)}/7</div>
     <p><b>Situación:</b> ${c[0]}</p><div class="reto">🎯 Reto: ${c[1]}</div>
     ${CR.map(([f,n,d])=>`<div class="row"><div>${n}<small>${d}</small></div><div class="seg">${[0,1,2].map(v=>`<button data-t="${t}" data-f="${f}" data-v="${v}" class="${x[f]===v?"on":""}">${v}</button>`).join("")}</div></div>`).join("")}
     <div class="row"><div>Bonus<small>El otro equipo lo usaría en su clase</small></div><div class="seg"><button data-t="${t}" data-f="b" data-v="${x.b?0:1}" class="${x.b?"on":""}" style="width:auto;padding:6px 12px">+1</button></div></div></div>`}).join("")}</div>
-  <div class="bar"><button id="prev" ${S.r?"":"disabled"}>← Anterior</button><button class="main" id="next">${S.r<4?"Siguiente ronda →":"Ver resultados 🏆"}</button></div>`;
+  <div class="bar"><button id="prev" ${S.r?"":"disabled"}>← Anterior</button><button class="main" id="next">${S.t===0?"Revelar reto de "+esc(S.names[1-S.r%2])+" →":(S.r<4?"Siguiente ronda →":"Ver resultados 🏆")}</button></div>`;
   app.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{S.sc[b.dataset.t][S.r][b.dataset.f]=+b.dataset.v;const y=scrollY;render2(y)});
-  $("prev").onclick=()=>{S.r--;render()};
-  $("next").onclick=()=>{S.r++;render();scrollTo(0,0)};
+  $("prev").onclick=()=>{S.r--;S.t=1;render()};
+  $("next").onclick=()=>{if(S.t===0){S.t=1;render()}else{S.r++;S.t=0;render();scrollTo(0,0)}};
 }
 function render2(y){const keep=remaining,run=!!iv;const app=$("app");const r=S.r;render();remaining=keep;draw();if(run)startT();scrollTo(0,y)}
-let remaining=150,iv=null;
+let remaining=75,iv=null;
 function draw(){const m=Math.floor(remaining/60),s=remaining%60;$("tm").textContent=m+":"+String(s).padStart(2,"0");$("tm").classList.toggle("low",remaining<=30&&remaining>0);$("tg").textContent=iv?"⏸":"▶"}
 function stopT(){clearInterval(iv);iv=null}
-function resetT(){stopT();remaining=150;draw()}
+function resetT(){stopT();remaining=75;draw()}
 function startT(){stopT();iv=setInterval(()=>{remaining--;if(remaining<=0){remaining=0;stopT();try{new (window.AudioContext||window.webkitAudioContext)().resume()}catch(e){}}draw()},1000);draw()}
 $("tg").onclick=()=>{iv?(stopT(),draw()):(remaining>0&&startT())};
 $("tr").onclick=resetT;
